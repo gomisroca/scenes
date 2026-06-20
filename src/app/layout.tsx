@@ -22,7 +22,7 @@ const plexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Screen",
+  title: "Scenes",
   description: "A collection of moments captured from games I've played.",
 };
 

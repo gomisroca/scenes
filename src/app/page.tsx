@@ -20,7 +20,7 @@ export default async function Home({
           № archive — public
         </p>
         <h1 className="font-display text-[40px] font-semibold leading-tight tracking-tight mb-2">
-          screenshot logbook
+          scenes
         </h1>
         <p className="text-[15px] text-fade max-w-md leading-relaxed">
           a running collection of moments captured from games I&apos;ve played,
