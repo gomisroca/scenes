@@ -16,15 +16,11 @@ export default async function Home({
   return (
     <>
       <header className="max-w-2xl mx-auto px-6 pt-14 pb-8 border-b border-tan">
-        <p className="font-utility text-xs uppercase tracking-wider text-rust mb-2.5 inline-block -rotate-[0.6deg]">
-          № archive — public
-        </p>
         <h1 className="font-display text-[40px] font-semibold leading-tight tracking-tight mb-2">
           scenes
         </h1>
         <p className="text-[15px] text-fade max-w-md leading-relaxed">
-          a running collection of moments captured from games I&apos;ve played,
-          sorted by title and kept more or less in order.
+          a collection of moments captured from games
         </p>
       </header>
 
@@ -51,7 +47,7 @@ export default async function Home({
         </Link>
       </div>
 
-      <main className="max-w-2xl mx-auto px-6 pt-9 pb-24 flex flex-col gap-12">
+      <main className="w-full mx-auto max-w-4xl px-6 pt-9 pb-24 flex flex-col gap-12">
         {entries.length === 0 ? (
           <p className="font-utility text-sm text-fade text-center py-20">
             no games in the archive yet.
