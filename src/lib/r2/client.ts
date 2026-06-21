@@ -28,16 +28,10 @@ export const r2Client = getR2Client();
 
 export const R2_BUCKET = process.env.R2_BUCKET_NAME!;
 
-/**
- * R2 buckets can be exposed via a public bucket URL (r2.dev domain
- * or a custom domain mapped via Cloudflare). We never store this
- * base URL in the DB — only the object key — so swapping domains
- * later doesn't require a data migration.
- */
 export function publicUrlFor(key: string): string {
-  const base = process.env.R2_PUBLIC_BASE_URL;
+  const base = process.env.NEXT_PUBLIC_R2_PUBLIC_BASE_URL;
   if (!base) {
-    throw new Error("R2_PUBLIC_BASE_URL is not set in .env.local");
+    throw new Error("NEXT_PUBLIC_R2_PUBLIC_BASE_URL is not set in .env.local");
   }
   return `${base.replace(/\/$/, "")}/${key}`;
 }
