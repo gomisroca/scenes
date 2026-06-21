@@ -1,6 +1,6 @@
 import { db } from "@/db";
 import { games, screenshots } from "@/db/schema";
-import { count, eq, desc, asc } from "drizzle-orm";
+import { count, eq, desc, asc, and, sql } from "drizzle-orm";
 
 export type GameWithCount = {
   game: typeof games.$inferSelect;
@@ -28,4 +28,65 @@ export async function getGamesWithCounts(
     );
 
   return rows;
+}
+
+/**
+ * Fetches a single game by its slug, plus its total screenshot count.
+ */
+export async function getGameBySlug(
+  slug: string,
+): Promise<GameWithCount | null> {
+  const [row] = await db
+    .select({
+      game: games,
+      screenshotCount: count(screenshots.id),
+    })
+    .from(games)
+    .leftJoin(screenshots, eq(screenshots.gameId, games.id))
+    .where(eq(games.slug, slug))
+    .groupBy(games.id)
+    .limit(1);
+
+  return row ?? null;
+}
+
+export type ScreenshotSort = "newest" | "oldest";
+
+/**
+ * Fetches one page of screenshots for a game, newest-or-oldest first,
+ * using cursor-based pagination.
+ */
+export async function getScreenshotsPage(params: {
+  gameId: number;
+  sort: ScreenshotSort;
+  cursor?: number;
+  limit: number;
+}) {
+  const { gameId, sort, cursor, limit } = params;
+
+  const baseCondition = eq(screenshots.gameId, gameId);
+  const cursorCondition =
+    cursor === undefined
+      ? undefined
+      : sort === "oldest"
+        ? sql`${screenshots.id} > ${cursor}`
+        : sql`${screenshots.id} < ${cursor}`;
+
+  const rows = await db
+    .select()
+    .from(screenshots)
+    .where(
+      cursorCondition ? and(baseCondition, cursorCondition) : baseCondition,
+    )
+    .orderBy(sort === "oldest" ? asc(screenshots.id) : desc(screenshots.id))
+    .limit(limit + 1); // fetch one extra to know if there's a next page
+
+  const hasMore = rows.length > limit;
+  const items = rows.slice(0, limit);
+
+  return {
+    items,
+    hasMore,
+    nextCursor: hasMore ? items[items.length - 1].id : null,
+  };
 }
