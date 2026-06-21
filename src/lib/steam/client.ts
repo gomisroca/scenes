@@ -1,14 +1,5 @@
-/**
- * Thin wrapper around Steam's public, key-less endpoints:
- *  - GetAppList: full id -> name index, used to *find* an app id
- *  - appdetails: per-app metadata, used to *populate* a game record
- *
- * Both are unauthenticated and free. We don't hit either of these
- * on page render — only when an admin adds a new game — so there's
- * no rate-limit concern at this scale.
- */
-
-const APP_LIST_URL = "https://api.steampowered.com/ISteamApps/GetAppList/v2/";
+const APP_LIST_URL =
+  "https://api.steampowered.com/IStoreService/GetAppList/v1/";
 const APP_DETAILS_URL = "https://store.steampowered.com/api/appdetails";
 
 export type SteamAppListEntry = {
@@ -29,29 +20,52 @@ export type SteamGameDetails = {
 
 let appListCache: SteamAppListEntry[] | null = null;
 
-/**
- * Fetches the full Steam app list (id -> name). This is a large
- * payload (tens of thousands of entries), so we cache it in memory
- * for the lifetime of the server process — fine for an admin-only,
- * low-frequency "search for a game to add" flow.
- */
+function getApiKey(): string {
+  const key = process.env.STEAM_API_KEY;
+  if (!key) {
+    throw new Error(
+      "STEAM_API_KEY is not set. Add it to .env.local — get a free key at https://steamcommunity.com/dev/apikey",
+    );
+  }
+  return key;
+}
+
 export async function getSteamAppList(): Promise<SteamAppListEntry[]> {
   if (appListCache) return appListCache;
 
-  const res = await fetch(APP_LIST_URL);
-  if (!res.ok) {
-    throw new Error(`Steam GetAppList failed: ${res.status}`);
+  const key = getApiKey();
+  const apps: SteamAppListEntry[] = [];
+  let lastAppId: number | undefined;
+
+  for (let page = 0; page < 10; page++) {
+    const params = new URLSearchParams({
+      key,
+      max_results: "50000",
+      include_games: "true",
+    });
+    if (lastAppId !== undefined) {
+      params.set("last_appid", String(lastAppId));
+    }
+
+    const res = await fetch(`${APP_LIST_URL}?${params.toString()}`);
+    if (!res.ok) {
+      throw new Error(`Steam GetAppList failed: ${res.status}`);
+    }
+
+    const data = await res.json();
+    const pageApps: SteamAppListEntry[] = data?.response?.apps ?? [];
+    apps.push(...pageApps.map((a) => ({ appid: a.appid, name: a.name })));
+
+    const haveMore = data?.response?.have_more_results;
+    if (!haveMore || pageApps.length === 0) break;
+
+    lastAppId = data?.response?.last_appid;
   }
-  const data = await res.json();
-  appListCache = data.applist.apps as SteamAppListEntry[];
+
+  appListCache = apps;
   return appListCache;
 }
 
-/**
- * Simple case-insensitive substring search over the cached app list.
- * Good enough for an admin typing a game name to find its App ID;
- * not meant for end-user search.
- */
 export async function searchSteamApps(
   query: string,
   limit = 10,
@@ -65,13 +79,6 @@ export async function searchSteamApps(
     .slice(0, limit);
 }
 
-/**
- * Fetches full details for a single Steam App ID and shapes them
- * into the fields our `games` table expects. Returns null if Steam
- * has no data for that id (delisted game, invalid id, etc.) rather
- * than throwing, since "not found" is an expected, recoverable case
- * for whoever is adding a game.
- */
 export async function fetchSteamGameDetails(
   appId: number,
 ): Promise<SteamGameDetails | null> {
