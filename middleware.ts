@@ -12,6 +12,11 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/api/upload/:path*", "/api/games/:path*", "/api/admin/:path*"],
+  matcher: [
+    "/api/upload/:path*",
+    "/api/admin/:path*",
+    "/api/games",
+    "/api/screenshots/:path*",
+  ],
   runtime: "nodejs",
 };
