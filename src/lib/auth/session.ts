@@ -50,4 +50,22 @@ export function checkPassword(submitted: string): boolean {
   return a.length === b.length && timingSafeEqual(aPadded, bPadded);
 }
 
+export function signUploadKey(gameSlug: string, r2Key: string): string {
+  return sign(`${gameSlug}:${r2Key}`);
+}
+
+export function verifyUploadKey(
+  gameSlug: string,
+  r2Key: string,
+  signature: string,
+): boolean {
+  const expected = sign(`${gameSlug}:${r2Key}`);
+
+  const a = Buffer.from(signature);
+  const b = Buffer.from(expected);
+  if (a.length !== b.length) return false;
+
+  return timingSafeEqual(a, b);
+}
+
 export { COOKIE_NAME, SESSION_MAX_AGE_SECONDS };
