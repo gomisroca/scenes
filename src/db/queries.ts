@@ -90,3 +90,27 @@ export async function getScreenshotsPage(params: {
     nextCursor: hasMore ? items[items.length - 1].id : null,
   };
 }
+/**
+ * Updates the editable subset of a game's fields
+ */
+export async function updateGameDetails(
+  slug: string,
+  updates: {
+    name: string;
+    shortDescription: string | null;
+    genres: string[];
+  },
+) {
+  const [updated] = await db
+    .update(games)
+    .set({
+      name: updates.name,
+      shortDescription: updates.shortDescription,
+      genres: updates.genres,
+      updatedAt: new Date(),
+    })
+    .where(eq(games.slug, slug))
+    .returning();
+
+  return updated ?? null;
+}

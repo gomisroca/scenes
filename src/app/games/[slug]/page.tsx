@@ -32,13 +32,21 @@ export default async function GameDetailPage({
 
   return (
     <>
-      <div className="max-w-4xl mx-auto px-6 pt-7">
+      <div className="max-w-4xl mx-auto px-6 pt-7 flex items-center justify-between gap-2">
         <Link
           href="/"
           className="font-utility text-xs text-fade hover:text-rust"
         >
           &larr; back to archive
         </Link>
+        {isAdmin ? (
+          <Link
+            href={`/games/${game.slug}/edit`}
+            className="font-utility text-xs text-fade hover:text-rust"
+          >
+            edit details
+          </Link>
+        ) : null}
       </div>
 
       <header className="max-w-4xl mx-auto px-6 pt-5">
