@@ -16,6 +16,7 @@ export const config = {
     "/api/upload/:path*",
     "/api/admin/:path*",
     "/api/games",
+    "/api/games/:slug/edit",
     "/api/screenshots/:path*",
   ],
   runtime: "nodejs",
