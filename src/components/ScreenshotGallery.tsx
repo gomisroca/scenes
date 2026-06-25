@@ -162,9 +162,27 @@ export function ScreenshotGallery({
       </div>
 
       {items.length === 0 ? (
-        <p className="font-utility text-sm text-fade text-center py-16">
-          no captures yet for this game.
-        </p>
+        <div className="bg-card border border-card-border px-8 py-12 text-center rotate-[-0.3deg] shadow-[1px_2px_4px_rgba(43,38,34,0.06),0_8px_18px_rgba(43,38,34,0.05)]">
+          <p className="font-utility text-xs uppercase tracking-wider text-rust mb-3">
+            № empty
+          </p>
+          <h3 className="font-display text-lg font-semibold mb-2">
+            no captures yet
+          </h3>
+          <p className="font-utility text-sm text-fade">
+            {isAdmin
+              ? "nothing's been uploaded for this game yet."
+              : "nothing's been logged for this game yet."}
+          </p>
+          {isAdmin ? (
+            <a
+              href="/upload"
+              className="font-utility text-xs uppercase tracking-wider bg-ink text-paper px-5 py-2.5 inline-block mt-5"
+            >
+              upload screenshots
+            </a>
+          ) : null}
+        </div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
           {items.map((shot, index) => (
