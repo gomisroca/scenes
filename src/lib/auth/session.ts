@@ -1,12 +1,12 @@
 import { createHmac, timingSafeEqual } from "crypto";
 
-const COOKIE_NAME = "upload_session";
-const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 30; // 30 days
+const COOKIE_NAME = "scenes_session";
+const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 7; // 7 days
 
 function getSecret(): string {
-  const secret = process.env.UPLOAD_PASSWORD;
+  const secret = process.env.PASSWORD;
   if (!secret) {
-    throw new Error("UPLOAD_PASSWORD is not set. Add it to .env.local");
+    throw new Error("PASSWORD is not set. Add it to .env.local");
   }
   return secret;
 }
